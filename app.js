@@ -12,34 +12,51 @@ const {
   findMode,
 } = require("./stats");
 
-
 const MISSING = "Expected key `nums` with comma-separated list of numbers.";
 
 app.use(express.urlencoded());
-
-/** Finds mean of nums in qs: returns {operation: "mean", result } */
-
-
-/** Finds median of nums in qs: returns {operation: "median", result } */
-
 
 /** Finds mode of nums in qs: returns {operation: "mode", result } */
 app.get("/mode", function (req, res) {
   const numsString = req.query["nums"];
 
+  let results = calculateStats("mode", findMode, numsString);
+  return res.json(results);
+});
+
+/** Finds mean of nums in qs: returns {operation: "mean", result } */
+app.get("/mean", function (req, res) {
+  const numsString = req.query["nums"];
+
+  let results = calculateStats("mean", findMean, numsString);
+  return res.json(results);
+});
+
+/** Finds median of nums in qs: returns {operation: "median", result } */
+app.get("/median", function (req, res) {
+  const numsString = req.query["nums"];
+
+  let results = calculateStats("median", findMedian, numsString);
+  return res.json(results);
+});
+
+/** Finds mean/median/mode of nums in qs: takes name, averaging function
+ * and string of numbers, returns {operation: "median", result } */
+function calculateStats(methodName, statsFunc, numsString){
   if (!numsString) {
-    throw new BadRequestError("nums are required");
+    throw new BadRequestError(MISSING);
   }
 
   const nums = convertStrNums(numsString);
 
-  const result = findMode(nums);
+  const result = statsFunc(nums);
 
-  return res.json({
-    operation: "mode",
+  return {
+    operation: methodName,
     result
-  });
-});
+  };
+}
+
 
 
 /** 404 handler: matches unmatched routes; raises NotFoundError. */
